@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { FaCopy, FaCheck } from "react-icons/fa";
 import { useClipboard } from "react-haiku";
 
-const Modal = ({ show, quote, isLoading, close }) => {
+const Modal = ({ show, quote, close }) => {
   const clipboard = useClipboard({ timeout: 2000 });
 
   const content = quote?.content || "";
@@ -32,16 +32,12 @@ const Modal = ({ show, quote, isLoading, close }) => {
         </button>
 
         <blockquote className="flex flex-col font-mono min-h-28 justify-center">
-          {isLoading ? (
-            <p className="text-slate-500">Loading quote...</p>
-          ) : (
-            <>
-              <p className="text-slate-900 border-l-8 border-slate-600 pl-3 mb-4">
-                <q>{content}</q>
-              </p>
-              <cite className="self-center text-gray-500"> -{author}</cite>
-            </>
-          )}
+          <>
+            <p className="text-slate-900 border-l-8 border-slate-600 pl-3 mb-4">
+              <q>{content}</q>
+            </p>
+            <cite className="self-center text-gray-500"> -{author}</cite>
+          </>
         </blockquote>
 
         <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Container from "./components/Container";
 import Header from "./components/Header";
 import PhotosList from "./components/PhotosList";
@@ -11,24 +11,49 @@ function App() {
   const { photos, isLoading, isError } = usePhotos();
   const [showModal, setShowModal] = useState(false);
   const [quote, setQuote] = useState(null);
-  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  const [quoteQueue, setQuoteQueue] = useState([]);
+
+  const fetchRandomQuote = async () => {
+    const res = await axios.get("https://dummyjson.com/quotes/random");
+    return {
+      content: res.data.quote,
+      author: res.data.author,
+    };
+  };
+
+  const refillQuoteQueue = async () => {
+    if (quoteQueue.length >= 3) return;
+
+    try {
+      const needed = 3 - quoteQueue.length;
+      const requests = Array.from({ length: needed }, () => fetchRandomQuote());
+      const newQuotes = await Promise.all(requests);
+      setQuoteQueue((prev) => [...prev, ...newQuotes]);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    refillQuoteQueue();
+  }, []);
 
   const handlePhotoClick = () => {
-    setShowModal(true);
-    setIsQuoteLoading(true);
-    setQuote(null);
+    if (quoteQueue.length > 0) {
+      const [nextQuote, ...restQuotes] = quoteQueue;
+      setQuote(nextQuote);
+      setQuoteQueue(restQuotes);
+      setShowModal(true);
+      return;
+    }
 
-    axios
-      .get("https://dummyjson.com/quotes/random")
-      .then((res) => {
-        setQuote({
-          content: res.data.quote,
-          author: res.data.author,
-        });
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setIsQuoteLoading(false));
+    // Fallback: if cache is empty, keep previous quote visible.
+    setShowModal(true);
   };
+
+  useEffect(() => {
+    refillQuoteQueue();
+  }, [quoteQueue]);
 
   return (
     <Container>
@@ -43,7 +68,6 @@ function App() {
       <Modal
         show={showModal}
         quote={quote}
-        isLoading={isQuoteLoading}
         close={() => setShowModal(false)}
       />
     </Container>
