@@ -3,10 +3,11 @@ import ReactDOM from "react-dom";
 import { FaCopy, FaCheck } from "react-icons/fa";
 import { useClipboard } from "react-haiku";
 
-const Modal = ({ show, quote, close }) => {
+const Modal = ({ show, quote, isLoading, close }) => {
   const clipboard = useClipboard({ timeout: 2000 });
 
-  const { content, author } = quote;
+  const content = quote?.content || "";
+  const author = quote?.author || "";
 
   if (!show) return null;
   return ReactDOM.createPortal(
@@ -20,6 +21,7 @@ const Modal = ({ show, quote, close }) => {
       <div className="w-11/12 md:w-1/2 z-20 px-8 py-8 bg-white flex flex-col justify-center items-center rounded-md shadow-lg">
         <button
           className="border-2 font-semibold p-2 mb-3 rounded-full text-gray-500 hover:text-gray-700 self-end"
+          disabled={!content}
           onClick={() => clipboard.copy(content)}
         >
           {clipboard.copied ? (
@@ -29,11 +31,17 @@ const Modal = ({ show, quote, close }) => {
           )}
         </button>
 
-        <blockquote className="flex flex-col font-mono">
-          <p className="text-slate-900 border-l-8 border-slate-600 pl-3 mb-4">
-            <q>{content}</q>
-          </p>
-          <cite className="self-center text-gray-500"> -{author}</cite>
+        <blockquote className="flex flex-col font-mono min-h-28 justify-center">
+          {isLoading ? (
+            <p className="text-slate-500">Loading quote...</p>
+          ) : (
+            <>
+              <p className="text-slate-900 border-l-8 border-slate-600 pl-3 mb-4">
+                <q>{content}</q>
+              </p>
+              <cite className="self-center text-gray-500"> -{author}</cite>
+            </>
+          )}
         </blockquote>
 
         <button

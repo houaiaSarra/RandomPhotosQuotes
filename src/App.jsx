@@ -10,9 +10,14 @@ import axios from "axios";
 function App() {
   const { photos, isLoading, isError } = usePhotos();
   const [showModal, setShowModal] = useState(false);
-  const [quote, setQuote] = useState({});
+  const [quote, setQuote] = useState(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
 
   const handlePhotoClick = () => {
+    setShowModal(true);
+    setIsQuoteLoading(true);
+    setQuote(null);
+
     axios
       .get("https://dummyjson.com/quotes/random")
       .then((res) => {
@@ -20,9 +25,9 @@ function App() {
           content: res.data.quote,
           author: res.data.author,
         });
-        setShowModal((s) => !s);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setIsQuoteLoading(false));
   };
 
   return (
@@ -35,7 +40,12 @@ function App() {
       {!isLoading && !isError && (
         <PhotosList photos={photos} handlePhotoClick={handlePhotoClick} />
       )}
-      <Modal show={showModal} quote={quote} close={() => setShowModal(false)} />
+      <Modal
+        show={showModal}
+        quote={quote}
+        isLoading={isQuoteLoading}
+        close={() => setShowModal(false)}
+      />
     </Container>
   );
 }
